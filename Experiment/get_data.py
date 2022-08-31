@@ -6,23 +6,25 @@ import pandas as pd
 This loads data for EVERY sector, industry, and sub-industry
 """
 
-def get_req_data(target_sector, start_date, end_date):
+def get_req_data(start_date, end_date):
     '''
     Currently concerned only with sector
     Inputs:
-    target_sector = string, passed in from json file iteration in model.py
     start_date = string, "YYYY-MM-DD"
     end_date = string, "YYYY-MM-DD"
     '''
+    # Load tickers from json file
+    sp500_tickers = json.load(open("sp500_sectors_and_industries.json", "r"))
+    
     sp500_tickers_data = {}  # to store data
 
-    # load the data required 
-    sp500_tickers_data[target_sector] = {  # builds a dictionary for the sector
-        "sector_data": yf.download(target_sector, start=start_date, end=end_date, progress=False)['Adj Close']
-        }  # stores the data here
+    for sector, industry_groups in sp500_tickers.items():  # iterate thru the sectors in the json file
+        # load the data required 
+        sp500_tickers_data[sector] = {  # builds a dictionary for the sector
+            "sector_data": yf.download(industry_groups['sector_ticker'], start=start_date, end=end_date, progress=False)['Adj Close']
+            }  # stores the data here
 
     return sp500_tickers_data
-
 
 # Original File:
 
