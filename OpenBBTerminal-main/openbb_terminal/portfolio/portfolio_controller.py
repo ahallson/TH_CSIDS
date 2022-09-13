@@ -62,6 +62,7 @@ class PortfolioController(BaseController):
         "rbeta",
         "metric",
         "summary",
+        "attrib",
     ]
     CHOICES_MENUS = [
         "bro",
@@ -196,6 +197,7 @@ class PortfolioController(BaseController):
         mt.add_cmd("summary", self.portfolio_name and self.benchmark_name)
         mt.add_cmd("metric", self.portfolio_name and self.benchmark_name)
         mt.add_cmd("perf", self.portfolio_name and self.benchmark_name)
+        mt.add_cmd("attrib", self.portfolio_name and self.benchmark_name)
 
         mt.add_info("_risk_")
         mt.add_cmd("var", self.portfolio_name and self.benchmark_name)
@@ -238,6 +240,7 @@ class PortfolioController(BaseController):
     summary          all portfolio vs benchmark metrics for a certain period of choice
     metric           portfolio vs benchmark metric for all different periods
     perf             performance of the portfolio versus benchmark{("[/unvl]", "[/cmds]")[port_bench]}
+    attrib           display attribution of portfolio returns by sector
 
 [info]Risk Metrics:[/info]{("[unvl]", "[cmds]")[port]}
     var              display value at risk
@@ -538,6 +541,42 @@ class PortfolioController(BaseController):
                     ns_parser.period,
                     ns_parser.show_trades,
                 )
+
+    @log_start_end(log=logger)
+    def call_attrib(self, other_args: List[str]):
+        """Process attrib command"""
+        parser = argparse.ArgumentParser(
+            add_help=False,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            prog="attrib",
+            description="""
+                Show your portfolio attribution of each sector.
+            """,
+        )
+        if other_args:
+            if other_args and "-" not in other_args[0][0]:
+                other_args.insert(0, "-a")
+
+        ns_parser = self.parse_known_args_and_warn(parser, other_args, limit=10)
+
+        if ns_parser and self.portfolio is not None:
+            console.print()
+            if check_portfolio_benchmark_defined(
+                self.portfolio_name, self.benchmark_name
+            ):
+                if self.portfolio.portfolio_assets_allocation.empty:
+                    self.portfolio.calculate_allocations()
+                
+                if self.benchmark_name != "SPDR S&P 500 ETF Trust (SPY)":
+                    print("Feature currently only available for SPY, please select SPY as benchmark")
+                else:
+                    print("benchmark selected:", self.benchmark_name)
+                    print("attribution command has been entered and in the location for the attribution function now")
+                    print("to access the sector allocations (weightings) for the portfolio to be used as weights:")
+                    print(self.portfolio.portfolio_sectors_allocation)
+                    print("SPY benchmark allocation (weightings) of sector")
+                    print(self.portfolio.benchmark_sectors_allocation)
+                    
 
     @log_start_end(log=logger)
     def call_holdv(self, other_args: List[str]):
