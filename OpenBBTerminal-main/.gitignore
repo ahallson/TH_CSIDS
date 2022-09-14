@@ -16,9 +16,9 @@ exports/*
 .idea
 .coverage
 htmlcov
-openbb_terminal/config_plot.py
-openbb_terminal/config_terminal.py
-openbb_terminal/feature_flags.py
+# openbb_terminal/config_plot.py
+# openbb_terminal/config_terminal.py
+# openbb_terminal/feature_flags.py
 openbb_terminal/reports/stored/*
 !openbb_terminal/reports/stored/.gitkeep
 !openbb_terminal/dashboards/*.ipynb
@@ -55,7 +55,7 @@ jupyterlab/*/ui-tests/tests/*.ts-snapshots/
 docs/_build
 
 # User stylesheets
-styles/user
+# styles/user
 
 # the file containing the API keys for the web version
 openbb_terminal_web/setenv

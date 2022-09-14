@@ -553,6 +553,15 @@ class PortfolioController(BaseController):
                 Show your portfolio attribution of each sector.
             """,
         )
+        parser.add_argument(
+            "-a",
+            "--agg",
+            default="sectors",
+            choices=self.AGGREGATION_METRICS,
+            dest="agg",
+            help="The type of attribution aggregation you wish to do",
+        )
+
         if other_args:
             if other_args and "-" not in other_args[0][0]:
                 other_args.insert(0, "-a")
@@ -560,22 +569,57 @@ class PortfolioController(BaseController):
         ns_parser = self.parse_known_args_and_warn(parser, other_args, limit=10)
 
         if ns_parser and self.portfolio is not None:
-            console.print()
+            
+           
             if check_portfolio_benchmark_defined(
                 self.portfolio_name, self.benchmark_name
             ):
-                if self.portfolio.portfolio_assets_allocation.empty:
-                    self.portfolio.calculate_allocations()
+                if ns_parser.agg == "assets":
+                    console.print(
+                        f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "
+                    )
+                elif ns_parser.agg == "sectors":
+                    # portfolio_view.display_category_allocation(
+                    #     ns_parser.agg,
+                    #     self.portfolio.portfolio_sectors_allocation,
+                    #     self.portfolio.benchmark_sectors_allocation,
+                    #     ns_parser.limit,
+                    #     ns_parser.tables,
+                    # )
+                    if self.portfolio.portfolio_assets_allocation.empty:
+                        self.portfolio.calculate_allocations()
+                    
+                    if self.benchmark_name != "SPDR S&P 500 ETF Trust (SPY)":
+                        print("Feature currently only available for SPY, please select SPY as benchmark")
+                    else:
+                        print("benchmark selected:", self.benchmark_name)
+                        print("attribution command has been entered and in the location for the attribution function now")
+                        print("to access the sector allocations (weightings) for the portfolio to be used as weights:")
+                        print(self.portfolio.portfolio_sectors_allocation)
+                        print("SPY benchmark allocation (weightings) of sector")
+                        print(self.portfolio.benchmark_sectors_allocation)
+                    
                 
-                if self.benchmark_name != "SPDR S&P 500 ETF Trust (SPY)":
-                    print("Feature currently only available for SPY, please select SPY as benchmark")
+                elif ns_parser.agg == "countries":
+                    console.print(
+                        f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "
+                        f"are: {', '.join(self.AGGREGATION_METRICS)}"
+                    )
+                elif ns_parser.agg == "regions":
+                    console.print(
+                        f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "
+                        f"are: {', '.join(self.AGGREGATION_METRICS)}"
+                    )
+                    
                 else:
-                    print("benchmark selected:", self.benchmark_name)
-                    print("attribution command has been entered and in the location for the attribution function now")
-                    print("to access the sector allocations (weightings) for the portfolio to be used as weights:")
-                    print(self.portfolio.portfolio_sectors_allocation)
-                    print("SPY benchmark allocation (weightings) of sector")
-                    print(self.portfolio.benchmark_sectors_allocation)
+                    console.print(
+                        f"{ns_parser.agg} is not an available option. Currently only sectors' are supported. Future supported  "
+                        f"are: {', '.join(self.AGGREGATION_METRICS)}"
+                    )
+                
+                console.print()
+
+                
                     
 
     @log_start_end(log=logger)
