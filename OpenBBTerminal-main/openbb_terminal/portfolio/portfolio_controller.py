@@ -2,6 +2,7 @@
 __docformat__ = "numpy"
 
 import argparse
+from datetime import date
 import logging
 import os
 from pathlib import Path
@@ -27,6 +28,9 @@ from openbb_terminal.portfolio import portfolio_helper
 from openbb_terminal.portfolio.portfolio_optimization import po_controller
 from openbb_terminal.rich_config import console, MenuText
 from openbb_terminal.common.quantitative_analysis import qa_view
+
+from dateutil.relativedelta import relativedelta # added this
+import yahooquery as yq # added this, requires added program to environment
 
 # pylint: disable=R1710,E1101,C0415,W0212,too-many-function-args,C0302,too-many-instance-attributes
 
@@ -541,7 +545,7 @@ class PortfolioController(BaseController):
                     ns_parser.period,
                     ns_parser.show_trades,
                 )
-
+ 
     @log_start_end(log=logger)
     def call_attrib(self, other_args: List[str]):
         """Process attrib command"""
@@ -560,6 +564,15 @@ class PortfolioController(BaseController):
             choices=self.AGGREGATION_METRICS,
             dest="agg",
             help="The type of attribution aggregation you wish to do",
+        )
+        parser.add_argument(
+            "-p",
+            "--period",
+            type=str,
+            choices=portfolio_helper.PERIODS,
+            dest="period",
+            default="all",
+            help="The file to be loaded",
         )
 
         if other_args:
@@ -592,14 +605,54 @@ class PortfolioController(BaseController):
                     if self.benchmark_name != "SPDR S&P 500 ETF Trust (SPY)":
                         print("Feature currently only available for SPY, please select SPY as benchmark")
                     else:
-                        print("benchmark selected:", self.benchmark_name)
-                        print("attribution command has been entered and in the location for the attribution function now")
-                        print("to access the sector allocations (weightings) for the portfolio to be used as weights:")
-                        print(self.portfolio.portfolio_sectors_allocation)
-                        print("SPY benchmark allocation (weightings) of sector")
-                        print(self.portfolio.benchmark_sectors_allocation)
-                    
-                
+                        # sector contribution 
+                        end_date = date.today()
+                        sectors_ticker = "SPY"
+                        # set correct time period
+                        if ns_parser.period == "all":
+                            start_date = self.portfolio.inception_date # type: pandas._libs.tslibs.timestamps.Timestamp
+                            start_date = start_date.date()
+                        elif ns_parser.period == "10y":
+                            start_date = date.today() + relativedelta(years=-10)
+                        elif ns_parser.period == "5y":
+                            start_date = date.today() + relativedelta(years=-5)
+                        elif ns_parser.period == "3y":
+                            start_date = date.today() + relativedelta(years=-3)
+                        elif ns_parser.period == "1y":
+                            start_date = date.today() + relativedelta(years=-1)
+                        elif ns_parser.period == "6m":
+                            start_date = date.today() + relativedelta(months=-6)
+                        elif ns_parser.period == "3m":
+                            start_date = date.today() + relativedelta(months=-3)
+                        elif ns_parser.period == "ytd":
+                            start_date = str(date.today().year) + "-1-1"
+                        elif ns_parser.period == "qtd":
+                            cm = date.today().month
+                            if cm >= 1 and cm <= 3:
+                                start_date = str(date.today().year) + "-1-1" #Q1
+                            elif cm >= 4 and cm <= 6:
+                                start_date = str(date.today().year) + "-4-1" #Q2
+                            elif cm >= 7 and cm <= 9:
+                                start_date = str(date.today().year) + "-7-1" #Q3
+                            elif cm >= 10 and cm <= 12:
+                                start_date = str(date.today().year) + "-10-1" #Q4
+                            else:
+                                print("Error")
+                        elif ns_parser.period == "mtd":
+                            mtd_start = "{year}-{month}-1"
+                            cur_month = date.today().month
+                            cur_year = date.today().year
+                            start_date = mtd_start.format(year=cur_year, month=cur_month)
+                        
+                        # call cont function from portfolio_helper
+                        print(portfolio_helper.cont(start_date, end_date))
+
+        
+                        # print("to access the sector allocations for the portfolio")
+                        # print(self.portfolio.portfolio_sectors_allocation)
+                        # print("SPY benchmark sector allocations")
+                        # print(self.portfolio.benchmark_sectors_allocation)
+                        
                 elif ns_parser.agg == "countries":
                     console.print(
                         f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "

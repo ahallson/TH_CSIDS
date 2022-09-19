@@ -8,6 +8,8 @@ import csv
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import pandas as pd
+import yahooquery as yq # added this 
+import json # added this too
 
 from openbb_terminal.rich_config import console
 
@@ -447,3 +449,69 @@ def get_info_from_ticker(ticker: str) -> list:
     # file does not exist or is empty, so write it
     ticker_info_list = get_info_update_file(ticker, file_path, "w")
     return ticker_info_list
+
+# our functions here;
+def get_req_data(start_date, end_date):
+    '''
+    Currently concerned only with sector
+    Inputs:
+    start_date = string, "YYYY-MM-DD"
+    end_date = string, "YYYY-MM-DD"
+    '''
+    # Load tickers from json file
+    ticker_json_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sp500_sectors_and_industries.json")
+    sp500_tickers = json.load(open(ticker_json_path, "r")) 
+    
+    sp500_tickers_data = {}  # to store data
+
+    for sector, industry_groups in sp500_tickers.items():  # iterate thru the sectors in the json file
+        # load the data required 
+        sp500_tickers_data[sector] = {  # builds a dictionary for the sector
+            "sector_data": yf.download(industry_groups['sector_ticker'], start=start_date, end=end_date, progress=False)['Adj Close']
+            }  # stores the data here
+
+    return sp500_tickers_data
+
+def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
+    
+    #Sector Map
+    sector_map = {
+    'S&P 500 Materials (Sector)' : 'basic_materials', 
+    'S&P 500 Industrials (Sector)' : 'industrials',
+    'S&P 500 Consumer Discretionary (Sector)' : 'consumer_cyclical' ,
+    'S&P 500 Consumer Staples (Sector)' : 'consumer_defensive',
+    'S&P 500 Health Care (Sector)' : 'healthcare', 
+    'S&P 500 Financials (Sector)' : 'financial_services',
+    'S&P 500 Information Technology (Sector)' : 'technology',
+    'S&P 500 Telecommunication Services (Sector)' : 'communication_services',
+    'S&P 500 Utilities (Sector)' : 'utilities', 
+    'S&P 500 Real Estate (Sector)' : 'realestate',
+    'S&P 500 Real Enegry (Sector)' : 'energy'
+    }
+    sectors_ticker = "SPY"
+
+    # Load in info
+    sp500_tickers_data = get_req_data(start_date, end_date)
+    weights = yq.Ticker(sectors_ticker).fund_sector_weightings.to_dict()
+
+    # add the sectors + dates + adj close to the dataframe
+    records = []
+    for sector, data in sp500_tickers_data.items():
+        for x in range(0, len(data['sector_data'])):
+
+            record = {"sector" : sector, "date" : data['sector_data'].index[x], "adj_close" : data["sector_data"][x], "sector_weight" : weights[sectors_ticker][sector_map[sector]] }
+            records.append(record)
+
+    df = pd.DataFrame(records)
+
+    df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
+
+    df["contribution"] = df["pct_change"] * df["sector_weight"]
+
+    #print(weights)
+    #display(df)
+
+    contributions = df.groupby("sector").agg({"contribution": "sum"})
+    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum())*100
+
+    return contributions
