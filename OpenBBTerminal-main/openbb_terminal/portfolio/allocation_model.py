@@ -54,10 +54,10 @@ def obtain_sector_allocation(benchmark_info: Dict, portfolio_trades: pd.DataFram
 
     Returns
     ------
-    regional_allocation: dict
-        Dictionary with regional allocations.
-    country_allocation: dict
-        Dictionary with country allocations
+    benchmark_sectors_allocation: dict
+        Dictionary with the top 10 of the benchmark's sector allocations.
+    portfolio_sectors_allocation: dict
+        Dictionary with the portfolio's sector allocations
     """
     benchmark_sectors_allocation = (
         pd.DataFrame.from_dict(
