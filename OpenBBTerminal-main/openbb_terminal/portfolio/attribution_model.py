@@ -16,11 +16,9 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
     # Pull data for each stock
     for i, trade in enumerate(portfolio_trades.iterrows()):
 
-        print(i)
-
         if trade[1]['Ticker'] not in pulled_tickers.keys():  # only need data for every ticker once
             # Get ticker from yf
-            ticker_data[trade[1]["Ticker"]] = yf.download(trade[1]['Ticker'], start=trade[1]["Date"])
+            ticker_data[trade[1]["Ticker"]] = yf.download(trade[1]['Ticker'], start=trade[1]["Date"], progress=False)
 
             if i == 0:  # create df on first iteration
                 portfolio_data = pd.DataFrame()
@@ -82,7 +80,6 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
 
     # calculate daily weightings
     sector_weights = sector_data.div(sector_data.sum(axis=1), axis=0)
-    print(sector_weights)
 
     # reformat df to long format so that it integrates with the rest of the code
     records = []
@@ -123,4 +120,4 @@ if __name__ == "__main__":
     df = pd.read_excel(  # TODO: Change to your own path
         "C:\\Users\\ajhal\\Projects_Code\\TH_CSIDS\\OpenBBTerminal-main\\portfolio\\holdings\\Public_Equity_Orderbook"
         ".xlsx")
-    get_daily_sector_sums_from_portfolio(df)
+    assert get_daily_sector_sums_from_portfolio(df).shape[0] != 0, "Error: Attribution model not working"
