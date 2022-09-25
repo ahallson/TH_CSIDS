@@ -593,13 +593,6 @@ class PortfolioController(BaseController):
                         f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "
                     )
                 elif ns_parser.agg == "sectors":
-                    # portfolio_view.display_category_allocation(
-                    #     ns_parser.agg,
-                    #     self.portfolio.portfolio_sectors_allocation,
-                    #     self.portfolio.benchmark_sectors_allocation,
-                    #     ns_parser.limit,
-                    #     ns_parser.tables,
-                    # )
                     if self.portfolio.portfolio_assets_allocation.empty:
                         self.portfolio.calculate_allocations()
                     
@@ -608,7 +601,6 @@ class PortfolioController(BaseController):
                     else:
                         # sector contribution 
                         end_date = date.today()
-                        sectors_ticker = "SPY"
                         # set correct time period
                         if ns_parser.period == "all":
                             start_date = self.portfolio.inception_date # type: pandas._libs.tslibs.timestamps.Timestamp
@@ -647,9 +639,9 @@ class PortfolioController(BaseController):
                         
                         # call cont function from portfolio_helper
                         sector_result = portfolio_helper.cont(start_date, end_date)
-                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(self.portfolio.get_orderbook)
+                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(self.portfolio.get_orderbook())
                         # combine result for displaying 
-                        result = pd.concat([sector_result, portfolio_result], axis=1)
+                        result = sector_result.merge(portfolio_result, left_index=True, right_on="sector")
                         portfolio_view.display_attributions(result, ns_parser.period)
 
                 elif ns_parser.agg == "countries":
@@ -669,10 +661,7 @@ class PortfolioController(BaseController):
                         f"are: {', '.join(self.AGGREGATION_METRICS)}"
                     )
                 
-                console.print()
-
-                
-                    
+                console.print()    
 
     @log_start_end(log=logger)
     def call_holdv(self, other_args: List[str]):

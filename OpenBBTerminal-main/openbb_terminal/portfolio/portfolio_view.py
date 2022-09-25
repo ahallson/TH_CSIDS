@@ -1778,10 +1778,10 @@ def display_attributions(
     ----------
     display: dataframe to be displayed
     """
-    # display.columns = ["Contribution", "Contribution as %"]
+    display.columns = ["Sector Contribution", "Sector Contribution as %", "Portfolio Contribution", "Portfolio Contribution as %"]
     print_rich_table(
         display,
-        # headers=list(display.columns),
+        headers=list(display.columns),
         title=f"Portfolio vs. Benchmark Attribution {time_period}",
         show_index=True,
         floatfmt=".3f",

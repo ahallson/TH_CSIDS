@@ -10,6 +10,7 @@ import yfinance as yf
 import pandas as pd
 import yahooquery as yq # added this 
 import json # added this too
+import numpy as np # added this too
 
 from openbb_terminal.rich_config import console
 
@@ -486,7 +487,7 @@ def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
     'S&P 500 Telecommunication Services (Sector)' : 'communication_services',
     'S&P 500 Utilities (Sector)' : 'utilities', 
     'S&P 500 Real Estate (Sector)' : 'realestate',
-    'S&P 500 Real Enegry (Sector)' : 'energy'
+    'S&P 500 Energy (Sector)' : 'energy'
     }
     sectors_ticker = "SPY"
 
@@ -515,13 +516,14 @@ def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
     contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum())*100
     
     # We standardize output DF form here
-    result_df = contributions.loc[:,contributions.columns != "contribution"]
+    # result_df = contributions.loc[:,contributions.columns != "contribution"]
     
     # result_df.rename(columns={"contribution_as_pct":"S&P 500 [%]"}, inplace=True)
     
     # result_df["Portfolio [%]"] =  #[INSERT PORTFOLIO ATTRIBUTIONS HERE!!!]
 
-    return result_df
+    # return result_df
+    return contributions
 
 def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # start date end date output
     """
@@ -533,6 +535,20 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
     portfolio_data = pd.DataFrame()
     portfolio_weighted = pd.DataFrame()
     sector_data = pd.DataFrame()
+
+    sector_map = {
+    'Basic Materials':'S&P 500 Materials (Sector)',
+    'Industrials':'S&P 500 Industrials (Sector)',
+    'Consumer Cyclical':'S&P 500 Consumer Discretionary (Sector)',
+    'Consumer Defensive':'S&P 500 Consumer Staples (Sector)',
+    'Healthcare':'S&P 500 Health Care (Sector)',
+    'Financial Services':'S&P 500 Financials (Sector)',
+    'Technology':'S&P 500 Information Technology (Sector)',
+    'Communication Services':'S&P 500 Telecommunication Services (Sector)',
+    'Utilities':'S&P 500 Utilities (Sector)',
+    'Real Estate':'S&P 500 Real Estate (Sector)',
+    'Energy':'S&P 500 Energy (Sector)',
+    }
 
     # Pull data for each stock
     for i, trade in enumerate(portfolio_trades.iterrows()):
@@ -607,11 +623,24 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
     for i, row in enumerate(sector_weights.iterrows()):  # iterrows is not the best but it works for now
 
         for sector in sectors:
-            record = {"sector": sector,
+            record = {"sector": sector_map[sector],
                       "date": row[0],
                       "adj_close": sector_data[sector][i],
                       "sector_weight": row[1][sector]}
             records.append(record)
-    data_long = pd.DataFrame(records)
+    df = pd.DataFrame(records)
 
-    return data_long
+    # get desired output 
+    df["adj_close"].fillna(0, inplace=True)
+    df["sector_weight"].fillna(0, inplace=True)
+
+    df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
+    df.replace([np.inf, -np.inf], 0, inplace=True)
+    df["contribution"] = df["pct_change"] * df["sector_weight"]
+    contributions = df.groupby("sector").agg({"contribution": "sum"})
+    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum())*100
+
+    # We standardize output DF form here
+    # result_df = contributions.loc[:,contributions.columns != "contribution"]
+
+    return contributions
