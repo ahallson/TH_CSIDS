@@ -7,6 +7,7 @@ import logging
 import os
 from pathlib import Path
 from typing import List
+from openbb_terminal.helper_funcs import print_rich_table
 
 import pandas as pd
 from prompt_toolkit.completion import NestedCompleter
@@ -645,14 +646,12 @@ class PortfolioController(BaseController):
                             start_date = mtd_start.format(year=cur_year, month=cur_month)
                         
                         # call cont function from portfolio_helper
-                        print(portfolio_helper.cont(start_date, end_date))
+                        sector_result = portfolio_helper.cont(start_date, end_date)
+                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(self.portfolio.get_orderbook)
+                        # combine result for displaying 
+                        result = pd.concat([sector_result, portfolio_result], axis=1)
+                        portfolio_view.display_attributions(result, ns_parser.period)
 
-        
-                        # print("to access the sector allocations for the portfolio")
-                        # print(self.portfolio.portfolio_sectors_allocation)
-                        # print("SPY benchmark sector allocations")
-                        # print(self.portfolio.benchmark_sectors_allocation)
-                        
                 elif ns_parser.agg == "countries":
                     console.print(
                         f"{ns_parser.agg} is not an available option. Currently only 'sectors' are supported "
