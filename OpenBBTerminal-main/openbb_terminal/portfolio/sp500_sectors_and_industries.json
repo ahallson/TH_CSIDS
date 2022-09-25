@@ -240,5 +240,8 @@
         }
       }
     }
+  },
+  "S&P 500 Energy (Sector)": {
+    "sector_ticker": "^GSPE"
   }
 }
