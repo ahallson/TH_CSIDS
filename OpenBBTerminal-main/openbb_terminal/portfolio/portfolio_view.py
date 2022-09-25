@@ -2,7 +2,6 @@
 __docformat__ = "numpy"
 
 import logging
-from tokenize import String
 from typing import List, Optional
 import os
 
@@ -1770,7 +1769,7 @@ def display_summary_portfolio_benchmark(
 @log_start_end(log=logger)
 def display_attributions(
     display: pd.DataFrame,
-    time_period: String
+    time_period: str
 ):
     """Display attribution for sector comparison to portfolio
 
@@ -1784,5 +1783,5 @@ def display_attributions(
         headers=list(display.columns),
         title=f"Portfolio vs. Benchmark Attribution {time_period}",
         show_index=True,
-        floatfmt=".3f",
+        floatfmt=".2f",
     )

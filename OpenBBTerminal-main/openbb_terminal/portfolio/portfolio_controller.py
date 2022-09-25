@@ -2,7 +2,7 @@
 __docformat__ = "numpy"
 
 import argparse
-from datetime import date
+from datetime import date, datetime
 import logging
 import os
 from pathlib import Path
@@ -618,28 +618,27 @@ class PortfolioController(BaseController):
                         elif ns_parser.period == "3m":
                             start_date = date.today() + relativedelta(months=-3)
                         elif ns_parser.period == "ytd":
-                            start_date = str(date.today().year) + "-1-1"
+                                start_date = date(date.today().year, 1, 1)
                         elif ns_parser.period == "qtd":
                             cm = date.today().month
                             if cm >= 1 and cm <= 3:
-                                start_date = str(date.today().year) + "-1-1" #Q1
+                                start_date = date(date.today().year, 1, 1)
                             elif cm >= 4 and cm <= 6:
-                                start_date = str(date.today().year) + "-4-1" #Q2
+                                start_date = date(date.today().year, 4, 1)
                             elif cm >= 7 and cm <= 9:
-                                start_date = str(date.today().year) + "-7-1" #Q3
+                                start_date = date(date.today().year, 7, 1)
                             elif cm >= 10 and cm <= 12:
-                                start_date = str(date.today().year) + "-10-1" #Q4
+                                start_date = date(date.today().year, 10, 1)
                             else:
                                 print("Error")
                         elif ns_parser.period == "mtd":
-                            mtd_start = "{year}-{month}-1"
                             cur_month = date.today().month
                             cur_year = date.today().year
-                            start_date = mtd_start.format(year=cur_year, month=cur_month)
+                            start_date = date(cur_year, cur_month, 1)
                         
                         # call cont function from portfolio_helper
                         sector_result = portfolio_helper.cont(start_date, end_date)
-                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(self.portfolio.get_orderbook())
+                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
                         # combine result for displaying 
                         result = sector_result.merge(portfolio_result, left_index=True, right_on="sector")
                         portfolio_view.display_attributions(result, ns_parser.period)

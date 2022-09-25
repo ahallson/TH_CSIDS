@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from pathlib import Path
 import csv
+from tracemalloc import start
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import pandas as pd
@@ -525,7 +526,7 @@ def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
     # return result_df
     return contributions
 
-def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # start date end date output
+def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFrame): 
     """
     Calculate sector attribution
     """
@@ -630,6 +631,10 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
             records.append(record)
     df = pd.DataFrame(records)
 
+    # filter passed off desired date here 
+    df["date"] = df["date"].dt.date
+    df = df[~(df["date"] < start_date)]
+
     # get desired output 
     df["adj_close"].fillna(0, inplace=True)
     df["sector_weight"].fillna(0, inplace=True)
@@ -642,5 +647,4 @@ def get_daily_sector_sums_from_portfolio(portfolio_trades: pd.DataFrame):  # sta
 
     # We standardize output DF form here
     # result_df = contributions.loc[:,contributions.columns != "contribution"]
-
     return contributions
