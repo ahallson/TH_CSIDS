@@ -648,3 +648,98 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
     # We standardize output DF form here
     # result_df = contributions.loc[:,contributions.columns != "contribution"]
     return contributions
+
+def percentage_attrib_categorizer(bench_df, port_df):
+
+    # rename columns 
+    bench_df.rename(columns={"contribution_as_pct":"S&P500 [%]"}, inplace=True)
+    port_df.rename(columns={"contribution_as_pct":"Portfolio [%]"}, inplace=True)
+    # append instead 
+    result = bench_df.join(port_df)
+    
+    # 1. Excess Attribution
+
+    result["Excess Attribution"] = result["Portfolio [%]"] - result["S&P500 [%]"] 
+
+    # 2. Attribution Ratio
+    
+    result["Attribution Ratio"] = result["Portfolio [%]"] / result["S&P500 [%]"] 
+
+    # 3. Attribution Direction
+
+    direction = []
+
+    for ratio in result["Attribution Ratio"]:
+        if ratio >= 0:
+            direction.append("Correlated (+)")
+        elif ratio <0:
+            direction.append("Uncorrelated (-)")
+
+
+    result["Attribution Direction [+/-]"] = direction
+
+    
+    # 4. Attribution Sensetivity 
+
+    sensitivity = []
+
+    for ratio in result["Attribution Ratio"]:
+        if abs(ratio) > 1.25:
+            sensitivity.append("High")
+        elif 0.75 <= abs(ratio) <= 1.25  :
+            sensitivity.append("Normal")
+        elif abs(ratio) < 0.75 :
+            sensitivity.append("Low")
+
+
+    result["Attribution Sensitivity"] = sensitivity
+    
+    return result
+
+
+def raw_attrib_categorizer(bench_df, port_df):
+
+    # rename columns 
+    bench_df.rename(columns={"contribution":"S&P500"}, inplace=True)
+    port_df.rename(columns={"contribution":"Portfolio"}, inplace=True)
+    # append instead 
+    result = bench_df.join(port_df)
+    
+    # 1. Excess Attribution
+
+    result["Excess Attribution"] = result["Portfolio"] - result["S&P500"] 
+
+    # 2. Attribution Ratio
+    
+    result["Attribution Ratio"] = result["Portfolio"] / result["S&P500"] 
+
+    # 3. Attribution Direction
+
+    direction = []
+
+    for ratio in result["Attribution Ratio"]:
+        if ratio >= 0:
+            direction.append("Correlated (+)")
+        elif ratio <0:
+            direction.append("Uncorrelated (-)")
+
+
+    result["Attribution Direction [+/-]"] = direction
+
+    
+    # 4. Attribution Sensetivity 
+
+    sensitivity = []
+
+    for ratio in result["Attribution Ratio"]:
+        if abs(ratio) > 1.25:
+            sensitivity.append("High")
+        elif 0.75 <= abs(ratio) <= 1.25  :
+            sensitivity.append("Normal")
+        elif abs(ratio) < 0.75 :
+            sensitivity.append("Low")
+
+
+    result["Attribution Sensitivity"] = sensitivity
+    
+    return result

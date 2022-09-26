@@ -1785,3 +1785,22 @@ def display_attributions(
         show_index=True,
         floatfmt=".2f",
     )
+
+@log_start_end(log=logger)
+def display_attribution_categorisation(
+    display: pd.DataFrame,
+    time_period: str,
+    data_type: str
+):
+    """Display attribution for sector comparison to portfolio
+
+    Parameters
+    ----------
+    display: dataframe to be displayed
+    """
+    print_rich_table(
+        display,
+        title=f"{data_type}: Portfolio vs. Benchmark Attribution Categorisation {time_period}",
+        show_index=True,
+        floatfmt=".2f",
+    )

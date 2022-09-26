@@ -637,11 +637,23 @@ class PortfolioController(BaseController):
                             start_date = date(cur_year, cur_month, 1)
                         
                         # call cont function from portfolio_helper
-                        sector_result = portfolio_helper.cont(start_date, end_date)
+                        bench_result = portfolio_helper.cont(start_date, end_date)
                         portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
                         # combine result for displaying 
-                        result = sector_result.merge(portfolio_result, left_index=True, right_on="sector")
+                        result = bench_result.merge(portfolio_result, left_index=True, right_on="sector")
                         portfolio_view.display_attributions(result, ns_parser.period)
+
+                        # output attribution categorisation display
+                        # using percentages
+                        bench_df = bench_result.iloc[:, [1]]
+                        port_df = portfolio_result.iloc[:,[1]]
+                        categorisation_result = portfolio_helper.percentage_attrib_categorizer(bench_df, port_df)
+                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %")
+                        # using raw 
+                        bench_df = bench_result.iloc[:, [0]]
+                        port_df = portfolio_result.iloc[:,[0]]
+                        categorisation_result = portfolio_helper.raw_attrib_categorizer(bench_df, port_df)
+                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Raw contributions")
 
                 elif ns_parser.agg == "countries":
                     console.print(
