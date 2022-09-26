@@ -9,9 +9,9 @@ from tracemalloc import start
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import pandas as pd
-import yahooquery as yq # added this 
-import json # added this too
-import numpy as np # added this too
+import yahooquery as yq  # added this
+import json  # added this too
+import numpy as np  # added this too
 
 from openbb_terminal.rich_config import console
 
@@ -238,12 +238,12 @@ now = datetime.now()
 PERIODS_DAYS = {
     "mtd": (now - datetime(now.year, now.month, 1)).days,
     "qtd": (
-        now
-        - datetime(
-            now.year,
-            1 if now.month < 4 else 4 if now.month < 7 else 7 if now.month < 7 else 10,
-            1,
-        )
+            now
+            - datetime(
+        now.year,
+        1 if now.month < 4 else 4 if now.month < 7 else 7 if now.month < 7 else 10,
+        1,
+    )
     ).days,
     "ytd": (now - datetime(now.year, 1, 1)).days,
     "all": 0,
@@ -341,17 +341,17 @@ def filter_df_by_period(df: pd.DataFrame, period: str = "all") -> pd.DataFrame:
         if datetime.now().month < 4:
             return df[
                 df.index.strftime("%Y-%m") < f"{datetime.now().strftime('%Y')}-04"
-            ]
+                ]
         if datetime.now().month < 7:
             return df[
                 (df.index.strftime("%Y-%m") >= f"{datetime.now().strftime('%Y')}-04")
                 & (df.index.strftime("%Y-%m") < f"{datetime.now().strftime('%Y')}-07")
-            ]
+                ]
         if datetime.now().month < 10:
             return df[
                 (df.index.strftime("%Y-%m") >= f"{datetime.now().strftime('%Y')}-07")
                 & (df.index.strftime("%Y-%m") < f"{datetime.now().strftime('%Y')}-10")
-            ]
+                ]
         return df[df.index.strftime("%Y-%m") >= f"{datetime.now().strftime('%Y')}-10"]
     if period == "ytd":
         return df[df.index.strftime("%Y") == datetime.now().strftime("%Y")]
@@ -399,7 +399,6 @@ def get_region_from_country(country: str) -> str:
 
 
 def get_info_update_file(ticker: str, file_path: Path, writemode: str) -> list:
-
     # Pull ticker info from yf
     yf_ticker_info = yf.Ticker(ticker).info
 
@@ -431,7 +430,6 @@ def get_info_update_file(ticker: str, file_path: Path, writemode: str) -> list:
 
 
 def get_info_from_ticker(ticker: str) -> list:
-
     filename = "tickers_info.csv"
 
     file_path = Path(str(DEFAULT_HOLDINGS_PATH), filename)
@@ -452,6 +450,7 @@ def get_info_from_ticker(ticker: str) -> list:
     ticker_info_list = get_info_update_file(ticker, file_path, "w")
     return ticker_info_list
 
+
 # our functions here;
 def get_req_data(start_date, end_date):
     '''
@@ -462,33 +461,36 @@ def get_req_data(start_date, end_date):
     '''
     # Load tickers from json file
     ticker_json_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "sp500_sectors_and_industries.json")
-    sp500_tickers = json.load(open(ticker_json_path, "r")) 
-    
+    sp500_tickers = json.load(open(ticker_json_path, "r"))
+
     sp500_tickers_data = {}  # to store data
 
     for sector, industry_groups in sp500_tickers.items():  # iterate thru the sectors in the json file
         # load the data required 
         sp500_tickers_data[sector] = {  # builds a dictionary for the sector
-            "sector_data": yf.download(industry_groups['sector_ticker'], start=start_date, end=end_date, progress=False)['Adj Close']
-            }  # stores the data here
+            "sector_data":
+                yf.download(industry_groups['sector_ticker'], start=start_date, end=end_date, progress=False)[
+                    'Adj Close']
+        }  # stores the data here
 
     return sp500_tickers_data
 
-def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
-    
-    #Sector Map
+
+def cont(start_date, end_date):  # format like 2015-01-15 (YYYY-MM-DD)
+
+    # Sector Map
     sector_map = {
-    'S&P 500 Materials (Sector)' : 'basic_materials', 
-    'S&P 500 Industrials (Sector)' : 'industrials',
-    'S&P 500 Consumer Discretionary (Sector)' : 'consumer_cyclical' ,
-    'S&P 500 Consumer Staples (Sector)' : 'consumer_defensive',
-    'S&P 500 Health Care (Sector)' : 'healthcare', 
-    'S&P 500 Financials (Sector)' : 'financial_services',
-    'S&P 500 Information Technology (Sector)' : 'technology',
-    'S&P 500 Telecommunication Services (Sector)' : 'communication_services',
-    'S&P 500 Utilities (Sector)' : 'utilities', 
-    'S&P 500 Real Estate (Sector)' : 'realestate',
-    'S&P 500 Energy (Sector)' : 'energy'
+        'S&P 500 Materials (Sector)': 'basic_materials',
+        'S&P 500 Industrials (Sector)': 'industrials',
+        'S&P 500 Consumer Discretionary (Sector)': 'consumer_cyclical',
+        'S&P 500 Consumer Staples (Sector)': 'consumer_defensive',
+        'S&P 500 Health Care (Sector)': 'healthcare',
+        'S&P 500 Financials (Sector)': 'financial_services',
+        'S&P 500 Information Technology (Sector)': 'technology',
+        'S&P 500 Telecommunication Services (Sector)': 'communication_services',
+        'S&P 500 Utilities (Sector)': 'utilities',
+        'S&P 500 Real Estate (Sector)': 'realestate',
+        'S&P 500 Energy (Sector)': 'energy'
     }
     sectors_ticker = "SPY"
 
@@ -500,8 +502,8 @@ def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
     records = []
     for sector, data in sp500_tickers_data.items():
         for x in range(0, len(data['sector_data'])):
-
-            record = {"sector" : sector, "date" : data['sector_data'].index[x], "adj_close" : data["sector_data"][x], "sector_weight" : weights[sectors_ticker][sector_map[sector]] }
+            record = {"sector": sector, "date": data['sector_data'].index[x], "adj_close": data["sector_data"][x],
+                      "sector_weight": weights[sectors_ticker][sector_map[sector]]}
             records.append(record)
 
     df = pd.DataFrame(records)
@@ -510,23 +512,24 @@ def cont(start_date, end_date):# format like 2015-01-15 (YYYY-MM-DD)
 
     df["contribution"] = df["pct_change"] * df["sector_weight"]
 
-    #print(weights)
-    #display(df)
+    # print(weights)
+    # display(df)
 
-    contributions = df.groupby("sector").agg({"contribution": "sum"})
-    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum())*100
-    
+    contributions = round(df.groupby("sector").agg({"contribution": "sum"}), 2)
+    contributions["contribution_as_pct"] = round((contributions["contribution"] / df["contribution"].sum()) * 100, 2)
+
     # We standardize output DF form here
     # result_df = contributions.loc[:,contributions.columns != "contribution"]
-    
+
     # result_df.rename(columns={"contribution_as_pct":"S&P 500 [%]"}, inplace=True)
-    
+
     # result_df["Portfolio [%]"] =  #[INSERT PORTFOLIO ATTRIBUTIONS HERE!!!]
 
     # return result_df
     return contributions
 
-def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFrame): 
+
+def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFrame):
     """
     Calculate sector attribution
     """
@@ -538,17 +541,17 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
     sector_data = pd.DataFrame()
 
     sector_map = {
-    'Basic Materials':'S&P 500 Materials (Sector)',
-    'Industrials':'S&P 500 Industrials (Sector)',
-    'Consumer Cyclical':'S&P 500 Consumer Discretionary (Sector)',
-    'Consumer Defensive':'S&P 500 Consumer Staples (Sector)',
-    'Healthcare':'S&P 500 Health Care (Sector)',
-    'Financial Services':'S&P 500 Financials (Sector)',
-    'Technology':'S&P 500 Information Technology (Sector)',
-    'Communication Services':'S&P 500 Telecommunication Services (Sector)',
-    'Utilities':'S&P 500 Utilities (Sector)',
-    'Real Estate':'S&P 500 Real Estate (Sector)',
-    'Energy':'S&P 500 Energy (Sector)',
+        'Basic Materials': 'S&P 500 Materials (Sector)',
+        'Industrials': 'S&P 500 Industrials (Sector)',
+        'Consumer Cyclical': 'S&P 500 Consumer Discretionary (Sector)',
+        'Consumer Defensive': 'S&P 500 Consumer Staples (Sector)',
+        'Healthcare': 'S&P 500 Health Care (Sector)',
+        'Financial Services': 'S&P 500 Financials (Sector)',
+        'Technology': 'S&P 500 Information Technology (Sector)',
+        'Communication Services': 'S&P 500 Telecommunication Services (Sector)',
+        'Utilities': 'S&P 500 Utilities (Sector)',
+        'Real Estate': 'S&P 500 Real Estate (Sector)',
+        'Energy': 'S&P 500 Energy (Sector)',
     }
 
     # Pull data for each stock
@@ -597,18 +600,18 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
 
             stocks_added[trade[1]["Ticker"]] = [trade[1]["Ticker"]]
     sectors = [
-            'Basic Materials',
-            'Industrials',
-            'Consumer Cyclical',
-            'Consumer Defensive',
-            'Healthcare',
-            'Financial Services',
-            'Technology',
-            'Communication Services',
-            'Utilities',
-            'Real Estate',
-            'Energy'
-        ]
+        'Basic Materials',
+        'Industrials',
+        'Consumer Cyclical',
+        'Consumer Defensive',
+        'Healthcare',
+        'Financial Services',
+        'Technology',
+        'Communication Services',
+        'Utilities',
+        'Real Estate',
+        'Energy'
+    ]
     # fill in missing sectors
     for sector in sectors:
         if sector not in sector_data.columns:
@@ -641,29 +644,29 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
 
     df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
     df.replace([np.inf, -np.inf], 0, inplace=True)
-    df["contribution"] = df["pct_change"] * df["sector_weight"]
+    df["contribution"] = round(df["pct_change"] * df["sector_weight"], 2)
     contributions = df.groupby("sector").agg({"contribution": "sum"})
-    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum())*100
+    contributions["contribution_as_pct"] = round((contributions["contribution"] / df["contribution"].sum()) * 100, 2)
 
-    # We standardize output DF form here
+    # We standardize output DF from here
     # result_df = contributions.loc[:,contributions.columns != "contribution"]
     return contributions
 
-def percentage_attrib_categorizer(bench_df, port_df):
 
-    # rename columns 
-    bench_df.rename(columns={"contribution_as_pct":"S&P500 [%]"}, inplace=True)
-    port_df.rename(columns={"contribution_as_pct":"Portfolio [%]"}, inplace=True)
+def percentage_attrib_categorizer(bench_df, port_df):
+    # rename columns
+    bench_df.rename(columns={"contribution_as_pct": "S&P500 [%]"}, inplace=True)
+    port_df.rename(columns={"contribution_as_pct": "Portfolio [%]"}, inplace=True)
     # append instead 
     result = bench_df.join(port_df)
-    
+
     # 1. Excess Attribution
 
-    result["Excess Attribution"] = result["Portfolio [%]"] - result["S&P500 [%]"] 
+    result["Excess Attribution"] = round(result["Portfolio [%]"] - result["S&P500 [%]"], 2)
 
     # 2. Attribution Ratio
-    
-    result["Attribution Ratio"] = result["Portfolio [%]"] / result["S&P500 [%]"] 
+
+    result["Attribution Ratio"] = round(result["Portfolio [%]"] / result["S&P500 [%]"], 2)
 
     # 3. Attribution Direction
 
@@ -672,46 +675,42 @@ def percentage_attrib_categorizer(bench_df, port_df):
     for ratio in result["Attribution Ratio"]:
         if ratio >= 0:
             direction.append("Correlated (+)")
-        elif ratio <0:
+        elif ratio < 0:
             direction.append("Uncorrelated (-)")
-
 
     result["Attribution Direction [+/-]"] = direction
 
-    
-    # 4. Attribution Sensetivity 
+    # 4. Attribution Sensetivity
 
     sensitivity = []
 
     for ratio in result["Attribution Ratio"]:
         if abs(ratio) > 1.25:
             sensitivity.append("High")
-        elif 0.75 <= abs(ratio) <= 1.25  :
+        elif 0.75 <= abs(ratio) <= 1.25:
             sensitivity.append("Normal")
-        elif abs(ratio) < 0.75 :
+        elif abs(ratio) < 0.75:
             sensitivity.append("Low")
 
-
     result["Attribution Sensitivity"] = sensitivity
-    
+
     return result
 
 
 def raw_attrib_categorizer(bench_df, port_df):
-
-    # rename columns 
-    bench_df.rename(columns={"contribution":"S&P500"}, inplace=True)
-    port_df.rename(columns={"contribution":"Portfolio"}, inplace=True)
+    # rename columns
+    bench_df.rename(columns={"contribution": "S&P500"}, inplace=True)
+    port_df.rename(columns={"contribution": "Portfolio"}, inplace=True)
     # append instead 
     result = bench_df.join(port_df)
-    
+
     # 1. Excess Attribution
 
-    result["Excess Attribution"] = result["Portfolio"] - result["S&P500"] 
+    result["Excess Attribution"] = round(result["Portfolio"] - result["S&P500"], 2)
 
     # 2. Attribution Ratio
-    
-    result["Attribution Ratio"] = result["Portfolio"] / result["S&P500"] 
+
+    result["Attribution Ratio"] = round(result["Portfolio"] / result["S&P500"], 2)
 
     # 3. Attribution Direction
 
@@ -720,26 +719,23 @@ def raw_attrib_categorizer(bench_df, port_df):
     for ratio in result["Attribution Ratio"]:
         if ratio >= 0:
             direction.append("Correlated (+)")
-        elif ratio <0:
+        elif ratio < 0:
             direction.append("Uncorrelated (-)")
-
 
     result["Attribution Direction [+/-]"] = direction
 
-    
-    # 4. Attribution Sensetivity 
+    # 4. Attribution Sensetivity
 
     sensitivity = []
 
     for ratio in result["Attribution Ratio"]:
         if abs(ratio) > 1.25:
             sensitivity.append("High")
-        elif 0.75 <= abs(ratio) <= 1.25  :
+        elif 0.75 <= abs(ratio) <= 1.25:
             sensitivity.append("Normal")
-        elif abs(ratio) < 0.75 :
+        elif abs(ratio) < 0.75:
             sensitivity.append("Low")
 
-
     result["Attribution Sensitivity"] = sensitivity
-    
+
     return result
