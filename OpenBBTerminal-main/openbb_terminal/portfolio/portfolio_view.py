@@ -1772,6 +1772,7 @@ def display_attributions(
     time_period: str
 ):
     """Display attribution for sector comparison to portfolio
+    Also create horizontal bar chart of the data.
 
     Parameters
     ----------
@@ -1785,6 +1786,12 @@ def display_attributions(
         show_index=True,
         floatfmt=".2f",
     )
+
+    _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
+    plot_out = display[["Sector Contribution as %", "Portfolio Contribution as %"]]
+    plot_out.plot.barh(ax=ax, align="center", width=0.8)
+    ax.set_title("Attributions By Sector")
+
 
 @log_start_end(log=logger)
 def display_attribution_categorisation(
@@ -1804,3 +1811,4 @@ def display_attribution_categorisation(
         show_index=True,
         floatfmt=".2f",
     )
+
