@@ -1789,7 +1789,8 @@ def display_attributions(
 
     _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
     plot_out = display[["Sector Contribution as %", "Portfolio Contribution as %"]]
-    plot_out.plot.barh(ax=ax, align="center", width=0.8)
+    plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
+
     ax.set_title("Attributions By Sector")
 
 
