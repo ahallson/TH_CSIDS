@@ -1766,39 +1766,40 @@ def display_summary_portfolio_benchmark(
         summary,
     )
 
-@log_start_end(log=logger)
-def display_attributions(
-    display: pd.DataFrame,
-    time_period: str
-):
-    """Display attribution for sector comparison to portfolio
-    Also create horizontal bar chart of the data.
+# @log_start_end(log=logger)
+# def display_attributions(
+#     display: pd.DataFrame,
+#     time_period: str
+# ):
+#     """Display attribution for sector comparison to portfolio
+#     Also create horizontal bar chart of the data.
 
-    Parameters
-    ----------
-    display: dataframe to be displayed
-    """
-    display.columns = ["Sector Contribution", "Sector Contribution as %", "Portfolio Contribution", "Portfolio Contribution as %"]
-    print_rich_table(
-        display,
-        headers=list(display.columns),
-        title=f"Portfolio vs. Benchmark Attribution {time_period}",
-        show_index=True,
-        floatfmt=".2f",
-    )
+#     Parameters
+#     ----------
+#     display: dataframe to be displayed
+#     """
+#     display.columns = ["Sector Contribution", "Sector Contribution as %", "Portfolio Contribution", "Portfolio Contribution as %"]
+#     print_rich_table(
+#         display,
+#         headers=list(display.columns),
+#         title=f"Portfolio vs. Benchmark Attribution {time_period}",
+#         show_index=True,
+#         floatfmt=".2f",
+#     )
 
-    _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
-    plot_out = display[["Sector Contribution as %", "Portfolio Contribution as %"]]
-    plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
+#     _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
+#     plot_out = display[["Sector Contribution as %", "Portfolio Contribution as %"]]
+#     plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
 
-    ax.set_title("Attributions By Sector")
+#     ax.set_title("Attributions By Sector")
 
 
 @log_start_end(log=logger)
 def display_attribution_categorisation(
     display: pd.DataFrame,
     time_period: str,
-    data_type: str
+    data_type: str,
+    show_plot: bool
 ):
     """Display attribution for sector comparison to portfolio
 
@@ -1813,3 +1814,8 @@ def display_attribution_categorisation(
         floatfmt=".2f",
     )
 
+    if show_plot:
+        _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
+        plot_out = display[["S&P500 [%]", "Portfolio [%]"]]
+        plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
+        ax.set_title("Attributions By Sector")    

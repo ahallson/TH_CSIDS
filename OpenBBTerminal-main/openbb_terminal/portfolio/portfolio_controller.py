@@ -640,20 +640,21 @@ class PortfolioController(BaseController):
                         bench_result = portfolio_helper.cont(start_date, end_date)
                         portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
                         # combine result for displaying 
-                        result = bench_result.merge(portfolio_result, left_index=True, right_on="sector")
-                        portfolio_view.display_attributions(result, ns_parser.period)
+                        # possibly don't need this to be output anymore, leave code in:
+                        # result = bench_result.merge(portfolio_result, left_index=True, right_on="sector")
+                        # portfolio_view.display_attributions(result, ns_parser.period)
 
                         # output attribution categorisation display
                         # using percentages
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
                         categorisation_result = portfolio_helper.percentage_attrib_categorizer(bench_df, port_df)
-                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %")
+                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %", True)
                         # using raw 
                         bench_df = bench_result.iloc[:, [0]]
                         port_df = portfolio_result.iloc[:,[0]]
                         categorisation_result = portfolio_helper.raw_attrib_categorizer(bench_df, port_df)
-                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Raw contributions")
+                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Raw contributions", False)
 
                 elif ns_parser.agg == "countries":
                     console.print(
