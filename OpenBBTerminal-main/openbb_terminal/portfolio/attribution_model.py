@@ -76,7 +76,6 @@ def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-1
 
 def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFrame):
 
-    price_data = {}
     contrib_df = pd.DataFrame()
     asset_tickers = list(portfolio_trades["Ticker"].unique())
     first_price = portfolio_trades["Date"].min()
