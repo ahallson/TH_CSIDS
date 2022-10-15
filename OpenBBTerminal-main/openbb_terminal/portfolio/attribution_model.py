@@ -1,3 +1,12 @@
+import logging
+from typing import Dict
+
+import pandas as pd
+import requests
+from openbb_terminal.decorators import log_start_end
+
+logger = logging.getLogger(__name__)
+
 import os
 import json
 import pandas as pd
@@ -5,11 +14,7 @@ import yfinance as yf
 import numpy as np
 import yahooquery as yq
 
-
-def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-15 (YYYY-MM-DD)
-
-    # Sector Map
-    sector_map = {
+SPY_SECTORS_MAP =  {
         'S&P 500 Materials (Sector)': 'basic_materials',
         'S&P 500 Industrials (Sector)': 'industrials',
         'S&P 500 Consumer Discretionary (Sector)': 'consumer_cyclical',
@@ -22,55 +27,8 @@ def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-1
         'S&P 500 Real Estate (Sector)': 'realestate',
         'S&P 500 Energy (Sector)': 'energy'
     }
-    sectors_ticker = "SPY"
 
-    # Load in info
-    sp500_tickers_data = get_daily_sector_prices(start_date, end_date)
-    weights = yq.Ticker(sectors_ticker).fund_sector_weightings.to_dict()
-
-    # add the sectors + dates + adj close to the dataframe
-    records = []
-    for sector, data in sp500_tickers_data.items():
-        for x in range(0, len(data['sector_data'])):
-            record = {"sector": sector, "date": data['sector_data'].index[x], "adj_close": data["sector_data"][x],
-                      "sector_weight": weights[sectors_ticker][sector_map[sector]]}
-            records.append(record)
-
-    df = pd.DataFrame(records)
-
-    df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
-
-    df["contribution"] = df["pct_change"] * df["sector_weight"]
-
-    # print(weights)
-    # display(df)
-
-    contributions = round(df.groupby("sector").agg({"contribution": "sum"}), 2)
-    contributions["contribution_as_pct"] = round((contributions["contribution"] / df["contribution"].sum()) * 100, 2)
-
-    # We standardize output DF form here
-    # result_df = contributions.loc[:,contributions.columns != "contribution"]
-
-    # result_df.rename(columns={"contribution_as_pct":"S&P 500 [%]"}, inplace=True)
-
-    # result_df["Portfolio [%]"] =  #[INSERT PORTFOLIO ATTRIBUTIONS HERE!!!]
-
-    # return result_df
-    return contributions
-
-
-def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFrame):
-    """
-    Calculate sector attribution
-    """
-    pulled_tickers = {}
-    stocks_added = {}
-    ticker_data = {}
-    portfolio_data = pd.DataFrame()
-    portfolio_weighted = pd.DataFrame()
-    sector_data = pd.DataFrame()
-
-    sector_map = {
+PF_SECTORS_MAP = {
         'Basic Materials': 'S&P 500 Materials (Sector)',
         'Industrials': 'S&P 500 Industrials (Sector)',
         'Consumer Cyclical': 'S&P 500 Consumer Discretionary (Sector)',
@@ -83,6 +41,60 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
         'Real Estate': 'S&P 500 Real Estate (Sector)',
         'Energy': 'S&P 500 Energy (Sector)',
     }
+
+
+
+def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-15 (YYYY-MM-DD)
+
+    # Sector Map
+
+    sectors_ticker = "SPY"
+
+    # Load in info
+    sp500_tickers_data = get_daily_sector_prices(start_date, end_date)
+    weights = yq.Ticker(sectors_ticker).fund_sector_weightings.to_dict()
+
+    # add the sectors + dates + adj close to the dataframe
+    records = []
+    for sector, data in sp500_tickers_data.items():
+        for x in range(0, len(data['sector_data'])):
+            record = {"sector": sector, "date": data['sector_data'].index[x], "adj_close": data["sector_data"][x],
+                      "sector_weight": weights[sectors_ticker][SPY_SECTORS_MAP[sector]]}
+            records.append(record)
+
+    df = pd.DataFrame(records)
+
+    df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
+
+    df["contribution"] = df["pct_change"] * df["sector_weight"]
+
+    contributions = round(df.groupby("sector").agg({"contribution": "sum"}), 2)
+    contributions["contribution_as_pct"] = round((contributions["contribution"] / df["contribution"].sum()) * 100, 2)
+
+    return contributions
+
+def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFrame):
+
+    
+    # Get trade data for each ticker in portfolio
+    
+    # For each day multiply by the holding on that day to get attribution for that asset
+
+    # 
+
+
+ ...
+
+def get_portfolio_sector_contributions_original(start_date, portfolio_trades: pd.DataFrame):
+    """
+    Calculate sector attribution
+    """
+    pulled_tickers = {}
+    stocks_added = {}
+    ticker_data = {}
+    portfolio_data = pd.DataFrame()
+    portfolio_weighted = pd.DataFrame()
+    sector_data = pd.DataFrame()
 
     # Pull data for each stock
     for i, trade in enumerate(portfolio_trades.iterrows()):
@@ -157,7 +169,7 @@ def get_daily_sector_sums_from_portfolio(start_date, portfolio_trades: pd.DataFr
     for i, row in enumerate(sector_weights.iterrows()):  # iterrows is not the best but it works for now
 
         for sector in sectors:
-            record = {"sector": sector_map[sector],
+            record = {"sector": PF_SECTORS_MAP[sector],
                       "date": row[0],
                       "adj_close": sector_data[sector][i],
                       "sector_weight": row[1][sector]}
@@ -294,8 +306,3 @@ def get_daily_sector_prices(start_date, end_date):
 
     return sp500_tickers_data
 
-if __name__ == "__main__":
-    df = pd.read_excel(  # TODO: Change to your own path
-        "C:\\Users\\ajhal\\Projects_Code\\TH_CSIDS\\OpenBBTerminal-main\\portfolio\\holdings\\Public_Equity_Orderbook"
-        ".xlsx")
-    assert get_daily_sector_sums_from_portfolio(df).shape[0] != 0, "Error: Attribution model not working"

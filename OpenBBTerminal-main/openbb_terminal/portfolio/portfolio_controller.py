@@ -611,14 +611,14 @@ class PortfolioController(BaseController):
                         
                         
                         bench_result = attribution_model.get_spy_sector_contributions(start_date, end_date)
-                        portfolio_result = attribution_model.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
+                        portfolio_result = attribution_model.get_portfolio_sector_contributions(start_date, self.portfolio.get_orderbook())                        
 
 
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
                         categorisation_result = attribution_model.percentage_attrib_categorizer(bench_df, port_df)
                         portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %", True)
-                        
+
                         # using raw 
                         bench_df = bench_result.iloc[:, [0]]
                         port_df = portfolio_result.iloc[:,[0]]
