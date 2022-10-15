@@ -4,6 +4,7 @@ from typing import Dict
 import pandas as pd
 import requests
 from openbb_terminal.decorators import log_start_end
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -75,15 +76,50 @@ def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-1
 
 def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFrame):
 
-    
-    # Get trade data for each ticker in portfolio
-    
-    # For each day multiply by the holding on that day to get attribution for that asset
+    price_data = {}
+    contrib_df = pd.DataFrame()
+    asset_tickers = list(portfolio_trades["Ticker"].unique())
+    first_price = portfolio_trades["Date"].min()
 
+
+    price_data = yf.download(asset_tickers, start=first_price, progress=False)["Adj Close"]
+    price_change = price_data.pct_change()
+
+
+    cumulative_positions = portfolio_trades.copy()
+    cumulative_positions["Quantity"] = cumulative_positions.groupby("Ticker")["Quantity"].cumsum()
+
+    cumulative_positions_wide = pd.pivot(cumulative_positions, index="Date",columns="Ticker",values="Quantity")
+
+    index = pd.date_range(start=first_price, end=datetime.now(), freq="1D")
+    contrib_df = cumulative_positions_wide.reindex(index).ffill(axis=0)
+    contrib_df = contrib_df.div(contrib_df.sum(axis=1), axis=0)
+    contrib_df = contrib_df * price_change
+
+    # Wide to Long
+    contrib_df = contrib_df.reset_index()
+    contrib_df = pd.melt(contrib_df, id_vars="index")
+    
+    # # Get Sectors
+    sector_df = portfolio_trades[["Ticker","Sector"]].groupby("Ticker").agg({"Sector":"min"}).reset_index()
+
+
+    contrib_df = pd.merge(contrib_df, sector_df)
+    contrib_df = contrib_df.rename(columns={"value":"contribution"})
+
+    contrib_df = contrib_df.groupby("Sector").agg({"contribution": "sum"})
+    contrib_df["contribution_as_pct"] = (contrib_df["contribution"] / contrib_df["contribution"].sum())*100
+
+    contrib_df = contrib_df.rename(index=PF_SECTORS_MAP)
+    contrib_df = contrib_df.reindex(PF_SECTORS_MAP.values())
+    contrib_df = contrib_df.fillna(0)
+
+
+    # For each day multiply by the holding on that day to get attribution for that asset
+    return contrib_df
     # 
 
 
- ...
 
 def get_portfolio_sector_contributions_original(start_date, portfolio_trades: pd.DataFrame):
     """
@@ -107,8 +143,9 @@ def get_portfolio_sector_contributions_original(start_date, portfolio_trades: pd
                 portfolio_data = pd.DataFrame()
                 portfolio_data.index = ticker_data[trade[1]["Ticker"]].index
 
+            # Creates wide dataframe Matrix of dates x ticker
             portfolio_data[trade[1]["Ticker"]] = ticker_data[trade[1]["Ticker"]]["Adj Close"]
-            # Add to dict
+            # Add to dict of tickers that have downloaded data
             pulled_tickers[trade[1]['Ticker']] = yf.Ticker(trade[1]['Ticker'])
 
         # Weight by number of shares in the given date range
@@ -125,6 +162,7 @@ def get_portfolio_sector_contributions_original(start_date, portfolio_trades: pd
 
             portfolio_weighted[trade[1]["Ticker"]][portfolio_weighted.index >= trade[1]["Date"]] += \
                 portfolio_data[trade[1]["Ticker"]][portfolio_data.index >= trade[1]["Date"]] * trade[1]["Quantity"]
+
 
     for i, trade in enumerate(
             portfolio_trades.iterrows()):  # we re-iterate through the trades as we need a fully-contructed portfolio_weighted df
