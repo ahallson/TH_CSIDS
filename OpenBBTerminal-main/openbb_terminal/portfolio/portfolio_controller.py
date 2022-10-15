@@ -26,6 +26,7 @@ from openbb_terminal.parent_classes import BaseController
 from openbb_terminal.portfolio import portfolio_model
 from openbb_terminal.portfolio import portfolio_view
 from openbb_terminal.portfolio import portfolio_helper
+from openbb_terminal.portfolio import attribution_model
 from openbb_terminal.portfolio.portfolio_optimization import po_controller
 from openbb_terminal.rich_config import console, MenuText
 from openbb_terminal.common.quantitative_analysis import qa_view
@@ -605,55 +606,23 @@ class PortfolioController(BaseController):
                         if ns_parser.period == "all":
                             start_date = self.portfolio.inception_date # type: pandas._libs.tslibs.timestamps.Timestamp
                             start_date = start_date.date()
-                        elif ns_parser.period == "10y":
-                            start_date = date.today() + relativedelta(years=-10)
-                        elif ns_parser.period == "5y":
-                            start_date = date.today() + relativedelta(years=-5)
-                        elif ns_parser.period == "3y":
-                            start_date = date.today() + relativedelta(years=-3)
-                        elif ns_parser.period == "1y":
-                            start_date = date.today() + relativedelta(years=-1)
-                        elif ns_parser.period == "6m":
-                            start_date = date.today() + relativedelta(months=-6)
-                        elif ns_parser.period == "3m":
-                            start_date = date.today() + relativedelta(months=-3)
-                        elif ns_parser.period == "ytd":
-                                start_date = date(date.today().year, 1, 1)
-                        elif ns_parser.period == "qtd":
-                            cm = date.today().month
-                            if cm >= 1 and cm <= 3:
-                                start_date = date(date.today().year, 1, 1)
-                            elif cm >= 4 and cm <= 6:
-                                start_date = date(date.today().year, 4, 1)
-                            elif cm >= 7 and cm <= 9:
-                                start_date = date(date.today().year, 7, 1)
-                            elif cm >= 10 and cm <= 12:
-                                start_date = date(date.today().year, 10, 1)
-                            else:
-                                print("Error")
-                        elif ns_parser.period == "mtd":
-                            cur_month = date.today().month
-                            cur_year = date.today().year
-                            start_date = date(cur_year, cur_month, 1)
+                        else:
+                            start_date = portfolio_helper.get_start_date_from_period(ns_parser.period)
                         
-                        # call cont function from portfolio_helper
-                        bench_result = portfolio_helper.cont(start_date, end_date)
-                        portfolio_result = portfolio_helper.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
-                        # combine result for displaying 
-                        # possibly don't need this to be output anymore, leave code in:
-                        # result = bench_result.merge(portfolio_result, left_index=True, right_on="sector")
-                        # portfolio_view.display_attributions(result, ns_parser.period)
+                        
+                        bench_result = attribution_model.get_spy_sector_contributions(start_date, end_date)
+                        portfolio_result = attribution_model.get_daily_sector_sums_from_portfolio(start_date, self.portfolio.get_orderbook())                        
 
-                        # output attribution categorisation display
-                        # using percentages
+
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
-                        categorisation_result = portfolio_helper.percentage_attrib_categorizer(bench_df, port_df)
+                        categorisation_result = attribution_model.percentage_attrib_categorizer(bench_df, port_df)
                         portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %", True)
+                        
                         # using raw 
                         bench_df = bench_result.iloc[:, [0]]
                         port_df = portfolio_result.iloc[:,[0]]
-                        categorisation_result = portfolio_helper.raw_attrib_categorizer(bench_df, port_df)
+                        categorisation_result = attribution_model.raw_attrib_categorizer(bench_df, port_df)
                         portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Raw contributions", False)
 
                 elif ns_parser.agg == "countries":
