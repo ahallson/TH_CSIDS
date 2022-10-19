@@ -103,8 +103,14 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
 
     # Wide to Long for aggregation
     contrib_df = contrib_df.reset_index()
+    contrib_df = contrib_df.rename(columns={"index":"date"})
+
+    # filter passed off desired date here 
+    contrib_df["date"] = contrib_df["date"].dt.date
+    contrib_df = contrib_df[~(contrib_df["date"] < start_date)]
+
     # melt on datetime field
-    contrib_df = pd.melt(contrib_df, id_vars="index")
+    contrib_df = pd.melt(contrib_df, id_vars="date")
     
     # # Get Sectors
     sector_df = portfolio_trades[["Ticker","Sector"]].groupby("Ticker").agg({"Sector":"min"}).reset_index()
