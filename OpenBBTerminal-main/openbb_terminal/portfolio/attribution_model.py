@@ -84,14 +84,15 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     price_data = yf.download(asset_tickers, start=first_price, progress=False)["Adj Close"]
     price_change = price_data.pct_change()
 
-
+    # Create a wide dataframe of shares owned on each day
     cumulative_positions = portfolio_trades.copy()
     cumulative_positions["Quantity"] = cumulative_positions.groupby("Ticker")["Quantity"].cumsum()
 
     cumulative_positions_wide = pd.pivot(cumulative_positions, index="Date",columns="Ticker",values="Quantity")
-
+    
     index = pd.date_range(start=first_price, end=datetime.now(), freq="1D")
     contrib_df = cumulative_positions_wide.reindex(index).ffill(axis=0)
+
     contrib_df = contrib_df.div(contrib_df.sum(axis=1), axis=0)
     contrib_df = contrib_df * price_change
 
@@ -101,7 +102,6 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     
     # # Get Sectors
     sector_df = portfolio_trades[["Ticker","Sector"]].groupby("Ticker").agg({"Sector":"min"}).reset_index()
-
 
     contrib_df = pd.merge(contrib_df, sector_df)
     contrib_df = contrib_df.rename(columns={"value":"contribution"})
