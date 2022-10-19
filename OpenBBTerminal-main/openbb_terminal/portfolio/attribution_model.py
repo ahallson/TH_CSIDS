@@ -92,12 +92,18 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     
     index = pd.date_range(start=first_price, end=datetime.now(), freq="1D")
     contrib_df = cumulative_positions_wide.reindex(index).ffill(axis=0)
+    # Multiply shares by price to get market cap of holdings on day
+    contrib_df = contrib_df * price_data
 
+    # turn daily market caps market caps into portfolio weights
     contrib_df = contrib_df.div(contrib_df.sum(axis=1), axis=0)
+
+    # multiply by pct change in price to get daily attribution
     contrib_df = contrib_df * price_change
 
-    # Wide to Long
+    # Wide to Long for aggregation
     contrib_df = contrib_df.reset_index()
+    # melt on datetime field
     contrib_df = pd.melt(contrib_df, id_vars="index")
     
     # # Get Sectors
