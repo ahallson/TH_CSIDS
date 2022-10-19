@@ -81,7 +81,12 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     first_price = portfolio_trades["Date"].min()
 
 
-    price_data = yf.download(asset_tickers, start=first_price, progress=False)["Adj Close"]
+    price_data = pd.DataFrame(yf.download(asset_tickers, start=first_price, progress=False)["Adj Close"]) #returns series when one ticker, hence cast to df
+
+    # if there is only one ticker the column name is "Adj Close" instead of the ticker, if so it needs to be renamed to allow the df multiplication to work
+    if len(asset_tickers) == 1:
+        price_data = price_data.rename(columns={"Adj Close":asset_tickers[0]})
+
     price_change = price_data.pct_change()
 
     # Create a wide dataframe of shares owned on each day
@@ -125,10 +130,9 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     contrib_df = contrib_df.reindex(PF_SECTORS_MAP.values())
     contrib_df = contrib_df.fillna(0)
 
-
     # For each day multiply by the holding on that day to get attribution for that asset
     return contrib_df
-    # 
+    
 
 
 
