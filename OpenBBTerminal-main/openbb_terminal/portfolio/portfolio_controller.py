@@ -585,7 +585,6 @@ class PortfolioController(BaseController):
 
         if ns_parser and self.portfolio is not None:
             
-           
             if check_portfolio_benchmark_defined(
                 self.portfolio_name, self.benchmark_name
             ):

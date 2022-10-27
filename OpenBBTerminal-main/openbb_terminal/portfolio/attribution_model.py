@@ -135,7 +135,6 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     
 
 
-
 def get_portfolio_sector_contributions_original(start_date, portfolio_trades: pd.DataFrame):
     """
     Calculate sector attribution
