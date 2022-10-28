@@ -616,6 +616,9 @@ class PortfolioController(BaseController):
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
                         categorisation_result = attribution_model.percentage_attrib_categorizer(bench_df, port_df)
+                        # round the values - percentages
+                        categorisation_result["S&P500 [%]"] = categorisation_result["S&P500 [%]"].astype(float).round(2)
+                        categorisation_result["Portfolio [%]"] = categorisation_result["Portfolio [%]"].astype(float).round(2)
                         portfolio_view.display_attribution_categorisation(
                             display=categorisation_result, 
                             time_period=ns_parser.period, 
@@ -627,6 +630,9 @@ class PortfolioController(BaseController):
                         bench_df = bench_result.iloc[:, [0]]
                         port_df = portfolio_result.iloc[:,[0]]
                         categorisation_result = attribution_model.raw_attrib_categorizer(bench_df, port_df)
+                        # round the values - raw values
+                        categorisation_result["S&P500"] = categorisation_result["S&P500"].astype(float).round(4)
+                        categorisation_result["Portfolio"] = categorisation_result["Portfolio"].astype(float).round(4)
                         portfolio_view.display_attribution_categorisation(
                             display=categorisation_result, 
                             time_period=ns_parser.period, 

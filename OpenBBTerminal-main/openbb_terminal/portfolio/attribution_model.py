@@ -301,7 +301,7 @@ def raw_attrib_categorizer(bench_df, port_df):
 
     # 1. Excess Attribution
 
-    result["Excess Attribution"] = round(result["Portfolio"] - result["S&P500"], 2)
+    result["Excess Attribution"] = round(result["Portfolio"] - result["S&P500"], 4)
 
     # 2. Attribution Ratio
 
