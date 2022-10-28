@@ -616,13 +616,23 @@ class PortfolioController(BaseController):
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
                         categorisation_result = attribution_model.percentage_attrib_categorizer(bench_df, port_df)
-                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Contributions as %", True)
+                        portfolio_view.display_attribution_categorisation(
+                            display=categorisation_result, 
+                            time_period=ns_parser.period, 
+                            attrib_type="Contributions as % of PF",
+                            plot_fields=["S&P500 [%]", "Portfolio [%]"],
+                            show_plot=True)
 
                         # using raw 
                         bench_df = bench_result.iloc[:, [0]]
                         port_df = portfolio_result.iloc[:,[0]]
                         categorisation_result = attribution_model.raw_attrib_categorizer(bench_df, port_df)
-                        portfolio_view.display_attribution_categorisation(categorisation_result, ns_parser.period, "Raw contributions", False)
+                        portfolio_view.display_attribution_categorisation(
+                            display=categorisation_result, 
+                            time_period=ns_parser.period, 
+                            attrib_type="Raw contributions (Return x PF Weight)",
+                            plot_fields=["S&P500", "Portfolio"], 
+                            show_plot=True)
 
                 elif ns_parser.agg == "countries":
                     console.print(
