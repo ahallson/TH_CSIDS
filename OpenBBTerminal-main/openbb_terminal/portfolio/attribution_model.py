@@ -192,7 +192,6 @@ def percentage_attrib_categorizer(bench_df: pd.DataFrame, pf_df: pd.DataFrame):
     # rename columns
     bench_df.rename(columns={"contribution_as_pct": "S&P500 [%]"}, inplace=True)
     pf_df.rename(columns={"contribution_as_pct": "Portfolio [%]"}, inplace=True)
-    # append instead 
     result = bench_df.join(pf_df)
 
     # 1. Excess Attribution
@@ -257,7 +256,6 @@ def raw_attrib_categorizer(bench_df, pf_df):
     # rename columns
     bench_df.rename(columns={"contribution": "S&P500"}, inplace=True)
     pf_df.rename(columns={"contribution": "Portfolio"}, inplace=True)
-    # append instead 
     result = bench_df.join(pf_df)
 
     # 1. Excess Attribution
