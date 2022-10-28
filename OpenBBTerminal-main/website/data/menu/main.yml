@@ -1387,6 +1387,8 @@ main:
             ref: "/terminal/portfolio/es"
           - name: om
             ref: "/terminal/portfolio/om"
+          - name: attrib
+            ref: "/terminal/portfolio/attrib"
       - name: forex
         ref: "/terminal/forex"
         sub:
