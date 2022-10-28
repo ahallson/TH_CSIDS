@@ -70,7 +70,7 @@ def get_spy_sector_contributions(start_date, end_date=date.today()):  # format l
     df["contribution"] = df["pct_change"] * df["sector_weight"]
 
     contributions = df.groupby("sector").agg({"contribution": "sum"})
-    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum()) * 100
+    contributions["contribution_as_pct"] = (contributions["contribution"] / abs(df["contribution"].sum())) * 100
 
     return contributions
 
@@ -125,7 +125,7 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     contrib_df = contrib_df.rename(columns={"value":"contribution"})
 
     contrib_df = contrib_df.groupby("Sector").agg({"contribution": "sum"})
-    contrib_df["contribution_as_pct"] = (contrib_df["contribution"] / contrib_df["contribution"].sum())*100
+    contrib_df["contribution_as_pct"] = (contrib_df["contribution"] / abs(contrib_df["contribution"].sum()))*100
 
     contrib_df = contrib_df.rename(index=PF_SECTORS_MAP)
     contrib_df = contrib_df.reindex(PF_SECTORS_MAP.values())
