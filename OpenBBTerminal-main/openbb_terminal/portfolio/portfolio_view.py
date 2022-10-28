@@ -1787,8 +1787,6 @@ def display_attribution_categorisation(
     )
 
     if show_plot:
-        # figsize=plot_autoscale()
-        # figsize= tuple(0.5*elem for elem in figsize)
         _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
         plot_out = display[["S&P500 [%]", "Portfolio [%]"]]
         plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
