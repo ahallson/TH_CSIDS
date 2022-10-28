@@ -203,7 +203,7 @@ class PortfolioController(BaseController):
         mt.add_cmd("summary", self.portfolio_name and self.benchmark_name)
         mt.add_cmd("metric", self.portfolio_name and self.benchmark_name)
         mt.add_cmd("perf", self.portfolio_name and self.benchmark_name)
-        mt.add_cmd("attrib", self.portfolio_name and self.benchmark_name)
+        mt.add_cmd("attrib", self.portfolio_name and self.benchmark_name)      
 
         mt.add_info("_risk_")
         mt.add_cmd("var", self.portfolio_name and self.benchmark_name)
@@ -608,11 +608,11 @@ class PortfolioController(BaseController):
                         else:
                             start_date = portfolio_helper.get_start_date_from_period(ns_parser.period)
                         
-                        
+                        # calculate benchmark and portfolio contribution values 
                         bench_result = attribution_model.get_spy_sector_contributions(start_date, end_date)
                         portfolio_result = attribution_model.get_portfolio_sector_contributions(start_date, self.portfolio.get_orderbook())                        
 
-
+                        # using percentage contributions
                         bench_df = bench_result.iloc[:, [1]]
                         port_df = portfolio_result.iloc[:,[1]]
                         categorisation_result = attribution_model.percentage_attrib_categorizer(bench_df, port_df)
