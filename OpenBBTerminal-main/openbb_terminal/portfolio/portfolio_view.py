@@ -1770,8 +1770,9 @@ def display_summary_portfolio_benchmark(
 def display_attribution_categorisation(
     display: pd.DataFrame,
     time_period: str,
-    data_type: str,
-    show_plot: bool
+    attrib_type: str,
+    plot_fields: list,
+    show_plot: bool,
 ):
     """Display attribution for sector comparison to portfolio
 
@@ -1781,15 +1782,15 @@ def display_attribution_categorisation(
     """
     print_rich_table(
         display,
-        title=f"{data_type}: Portfolio vs. Benchmark Attribution Categorisation {time_period}",
+        title=f"{attrib_type}: Portfolio vs. Benchmark Attribution Categorisation {time_period}",
         show_index=True,
         floatfmt=".2f",
     )
 
     if show_plot:
         _, ax = plt.subplots(figsize=plot_autoscale(), dpi=PLOT_DPI)
-        plot_out = display[["S&P500 [%]", "Portfolio [%]"]]
+        plot_out = display[plot_fields]
         plot_out.plot.barh(ax=ax, align="center", width=0.8, color=["#1f77b4", "#ff7f0e"])
-        ax.set_title("Attributions By Sector")    
+        ax.set_title(f"{attrib_type} By Sector")    
         plt.tight_layout()
 
