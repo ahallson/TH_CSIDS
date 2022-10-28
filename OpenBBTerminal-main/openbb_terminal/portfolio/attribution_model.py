@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 from openbb_terminal.decorators import log_start_end
 from datetime import datetime
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ PF_SECTORS_MAP = {
 
 
 
-def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-15 (YYYY-MM-DD)
+def get_spy_sector_contributions(start_date, end_date=date.today()):  # format like 2015-01-15 (YYYY-MM-DD)
 
     # Sector Map
 
@@ -66,11 +67,10 @@ def get_spy_sector_contributions(start_date, end_date):  # format like 2015-01-1
     df = pd.DataFrame(records)
 
     df["pct_change"] = df.groupby("sector")["adj_close"].pct_change()
-
     df["contribution"] = df["pct_change"] * df["sector_weight"]
 
-    contributions = round(df.groupby("sector").agg({"contribution": "sum"}), 2)
-    contributions["contribution_as_pct"] = round((contributions["contribution"] / df["contribution"].sum()) * 100, 2)
+    contributions = df.groupby("sector").agg({"contribution": "sum"})
+    contributions["contribution_as_pct"] = (contributions["contribution"] / df["contribution"].sum()) * 100
 
     return contributions
 
@@ -97,6 +97,7 @@ def get_portfolio_sector_contributions(start_date, portfolio_trades: pd.DataFram
     
     index = pd.date_range(start=first_price, end=datetime.now(), freq="1D")
     contrib_df = cumulative_positions_wide.reindex(index).ffill(axis=0)
+
     # Multiply shares by price to get market cap of holdings on day
     contrib_df = contrib_df * price_data
 
